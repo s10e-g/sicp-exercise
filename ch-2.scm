@@ -203,3 +203,135 @@
       (append rest (map (lambda (x)
                           (cons (car s) x))
                         rest)))))
+
+
+;;; 2.2.3
+(define (filter predicate sequence)
+  (cond ((null? sequence) '())
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1) high))))
+
+
+;;; ex-2.33
+(define (ya-map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) '() sequence))
+
+(define (ya-append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(define (ya-length sequence)
+  (accumulate (lambda (x y) (+ 1 y))0 sequence))
+
+
+;;; ex-2.34
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms)
+                (+ this-coeff (* x higher-terms)))
+              0
+              coefficient-sequence))
+
+
+;;; ex-2.35
+(define (count-leaves t)
+  (accumulate + 0 (map (lambda (sub-tree)
+                         (if (pair? sub-tree)
+                             (count-leaves sub-tree)
+                             1))
+                       t)))
+
+
+;;; ex-2.36
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      '()
+      (cons (accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))
+
+
+;;; ex-2.37
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (vec) (dot-product v vec)) m))
+
+(define (transpose mat)
+  (accumulate-n cons '() mat))
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (vec) (matrix-*-vector cols vec)) m)))
+
+
+;;; ex-2.38
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter(op result (car rest))
+             (cdr rest))))
+  (iter initial sequence))
+
+(define fold-right accumulate)
+
+
+;;; ex-2.39
+(define (reverse-1 sequence)
+  (fold-right (lambda (x y) (append y (list x))) '() sequence))
+
+(define (reverse-2 sequence)
+  (fold-left (lambda (x y) (cons y x)) '() sequence))
+
+
+;;; ex-2.40
+(define (flatmap proc seq)
+  (accumulate append '() (map proc seq)))
+
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+
+;;; ex-2.41
+(define (unique-triples n)
+  (flatmap (lambda (i)
+             (flatmap (lambda (j)
+                        (map (lambda (k) (list i j k))
+                             (enumerate-interval 0 (- j 1))))
+                      (enumerate-interval 0 (- i 1))))
+           (enumerate-interval 0 n)))
+
+(define (sum-s s)
+  (filter (lambda (seq) (= s (+ (car seq) (cadr seq) (caddr seq))))
+          (unique-triples (- s 1))))
+
+
+;;; ex-2.42
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
