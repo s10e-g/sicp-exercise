@@ -22,6 +22,8 @@
 
 
 ;;; 2.2.4
+(load "46.scm")
+
 (define (frame-coord-map frame)
   (lambda (v)
     (add-vect
