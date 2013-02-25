@@ -159,3 +159,32 @@
              (intersection-sorted-set (cdr set1) set2))
             ((> x1 x2)
              (intersection-sorted-set set1 (cdr set2)))))))
+
+(define (entry tree) (car tree))
+
+(define (left-branch tree) (cadr tree))
+
+(define (right-branch tree) (caddr tree))
+
+(define (make-tree entry left right)
+  (list entry left right))
+
+(define (element-of-BST? x tree)
+  (cond ((null? tree) #f)
+        ((= x (entry tree)) #t)
+        ((< x (entry tree))
+         (element-of-BST? x (left-branch tree)))
+        ((> x (entry tree))
+         (element-of-BST? x (right-branch tree)))))
+
+(define (adjoin-BST x tree)
+  (cond ((null? tree) (make-tree x '() '()))
+        ((= x (entry tree)) tree)
+        ((< x (entry tree))
+         (make-tree (entry tree)
+                    (adjoin-BST x (left-branch tree))
+                    (right-branch tree)))
+        ((> x (entry tree))
+         (make-tree (entry tree)
+                    (left-branch tree)
+                    (adjoin-BST x (right-branch tree))))))
