@@ -1,0 +1,11 @@
+;;; ex-2.62
+(load "common.scm")
+(define (union-sorted-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((= (car set1) (car set2))
+         (cons (car set1) (union-sorted-set (cdr set1) (cdr set2))))
+        ((< (car set1) (car set2))
+         (cons (car set1) (union-sorted-set (cdr set1) set2)))
+        ((> (car set1) (car set2))
+         (cons (car set2) (union-sorted-set set1 (cdr set2))))))
