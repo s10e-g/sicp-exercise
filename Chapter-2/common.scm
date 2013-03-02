@@ -219,7 +219,7 @@
 (define (weight tree)
   (if (leaf? tree)
     (weight-leaf tree)
-    (caddr tree)))
+    (cadddr tree)))
 
 (define (decode bits tree)
   (define (decode-1 bits current-branch)
@@ -229,8 +229,8 @@
               (choose-branch (car bits) current-branch)))
         (if (leaf? next-branch)
           (cons (symbol-leaf next-branch)
-                (decode (cdr bits) tree))
-          (decode (cdr bits) next-branch)))))
+                (decode-1 (cdr bits) tree))
+          (decode-1 (cdr bits) next-branch)))))
   (decode-1 bits tree))
 
 (define (choose-branch bit branch)
